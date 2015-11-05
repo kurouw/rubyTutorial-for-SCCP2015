@@ -3,16 +3,16 @@ loop{
   a=a.to_i
   c=c.to_i
   
-  case b
+ puts(case b
   when '+' then
-    puts a+c
+    a+c
   when '-' then
-    puts a-c
+    a-c
   when '*' then
-    puts a*c
+    a*c
   when '/' then
-    puts a/c
+    a/c
   else
     break
-  end
+  end)
 }
