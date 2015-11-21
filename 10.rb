@@ -8,16 +8,13 @@ loop{
     arr.push(arr.inject(:+))
     mat.push arr
   }
-
-   colsum=mat.transpose.map{|r|
-      r.inject(:+)
-   }
+   colsum=mat.transpose.map{|r|r.inject(:+)}
    mat.push(colsum)
    
-  mat.each do |x|
-    x.each do |y|
-      print "%5d" % y
-    end
-    puts
-  end
+   mat.each{|x|
+     x.each{|y|
+       print "%5d" % y
+     }
+     puts
+   }
 }
