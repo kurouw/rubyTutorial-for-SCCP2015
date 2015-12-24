@@ -7,7 +7,7 @@ class Human
     @name = Name.new(firstName, middleName, familyName)
     @age = age
     @@population+=1
-    
+
     if @@family_population[familyName].nil? then
       @@family_population[familyName] = 1
     else
