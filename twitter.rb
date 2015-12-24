@@ -10,35 +10,67 @@
 #7.ツイートには以下の値を持っている。
 #→つぶやいた時間、つぶやきの内容をもっている。
 
-class Users
-  @@user = {}
+#=========================================
+class Func
 
-  def initialize(username,tweet=1)
-    @username = Name.new(username)
-    @tweet = tweet
-    @cnf = signIN
-
-    if @cnf == "yes" then
-      @@user[@username]=@tweet
-    end
+  @@function_cnf=0
+  
+  def initialize
+    @scnf = f_rogin
     
-  end
-
-  def self.users
-    if @@user[@username].nil? then
-      0
-    else
-      1
+    if @scnf == "1" then
+      @tweet = tweet
+    elsif @scnf == "-1" then
+      @@function_cnf="-1"
     end
   end
 
+  def f_rogin
+    loop do
+      @scnf=Rogin.new.to_s
+      if @scnf=="-1" then
+        break
+      elsif @scnf=="1" then
+        break
+      end
+    end
+  end
+
+  def timeline
+  end
+
+  def tweet
+    User.insert(Tweet.new)
+  end
+
+end
+#=========================================
+
+
+#---------------------------------
+class User
+  @@user = {}
+  @@tweet = Array.new
+
+  def initialize(username)
+    @username = Name.new(username)
+    @cnf =  Sign.new(username)
+  end
+
+  def insert(tweet)
+    @@tweet << Tweet.new(tweet)
+    name=Sign.find.to_s
+    @@user[name]=@@tweet
+    return @@user[name]
+  end
+  
   def to_s
-    return @cnf
+  "#{@cnf}"
   end
 end
 
-
-class Name
+#---------------------------------
+class Name #ユーザー名を表示クラス
   def initialize(username)
     @username = username
   end
@@ -47,41 +79,92 @@ class Name
     "#{@username}"
   end
 end
-
-def signIN
-  if  Users.users == 0 then
-    puts "ユーザーがいません。"
-    puts "ユーザー登録しますか？"
-    puts "登録->y 登録しない->n"
-    a = STDIN.gets
-    a.chomp!
-    if a == "y" then
-      signUP(a)
-    elsif a == "n" then
-      signUP(a)
+#--------------------------
+class Sign #サインインクラス
+  @@exist = {}
+  def initialize(username)
+    @username = username
+    
+    if @@exist[@username].nil? then
+      sign
+    else
+      @@exist[@username]=2
     end
-  else
-    "yes"
   end
-end
-
-def signUP(cnf)
-  if cnf=='y' then
-    "yes"
-  elsif cnf=='n' then
-    "no"
-  end
-end
   
+  def sign
+    puts "ユーザーがいません。"
+    puts "ユーザー登録しますか？(y/n)"
+    a = STDIN.gets.chomp!
+    if a == "y" then
+      @@exist[@username]=1
+    elsif a == "n" then
+      @@exist[@username]=0
+    end
+  end
 
-loop do #ログイン
-print "ユーザー名を入力してください->"
-arr = STDIN.gets.chomp!
-cnf=Users.new(arr)
-cnf=cnf.to_s
-if cnf == "yes" then
-  puts "ログイン成功"
-  break
+  def find
+    @@exist.each do |name,exi|
+      if exi==2 then
+        return name
+      end
+    end
+  end
+        
+    
+  
+  def to_s
+    "#{@@exist[@username]}"
+  end
 end
 
+#--------------------------
+class Tweet
+  def initialize
+    @tweet = tweet_do
+  end
+
+  def tweet_do
+    @tweet = STDIN.gets
+  end
+
+  def to_s
+    "#{@tweet}"
+  end
 end
+#--------------------------
+class Rogin #ログイン
+  def initialize
+    @cnf=0
+    r_rogin
+  end
+
+  def r_rogin
+    loop do 
+      print "ユーザー名を入力してください->"
+      arr = STDIN.gets.chomp!
+      cnf=User.new(arr)
+      cnf=cnf.to_s
+      if cnf == "2" then
+        puts "ログイン成功"
+        @cnf=1
+        break
+      end
+      puts "終了しますか?(y/n)"
+      cnf=STDIN.gets
+      if cnf=="y" then
+        @cnf=-1
+      else
+        @cnf=0
+      end
+    end
+  end
+
+  def to_s
+    "#{@cnf}"
+  end
+end
+
+#--------------------------
+
+function_cnf=Func.new
