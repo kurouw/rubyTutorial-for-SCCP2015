@@ -1,37 +1,37 @@
 # -*- coding: utf-8 -*-
-#twitter作成
-#流れと大まかな仕様
-#1.プログラム起動
-#2.ログイン画面
-#3.ユーザー名でログイン
-#4.モード選択
-#->1.ホーム(タイムライン)
-#->2.ツイート
-#->3.アカウント->logoutなどができる。
-#5.タイムラインには世界中の人のつぶやきが見える
-#6.つぶやきのみができる。
-#7.つぶやくとそのユーザー名のツイート配列に入る。
-#8.ツイートには以下の値を持っている。
-#→つぶやいた時間、つぶやきの内容をもっている。
-
 #=========================================
-class Func
+class Func #中心クラス
 
   @@function_cnf=0
   
   def initialize
     @scnf = 0
     @tweet = 0
-    f_rogin
+    core
     
     if @scnf !="-1" then
       f_mode
     end
   end
 
-  def f_rogin
+  def core # continue or end -> アプリを終了するか続けるか。
+    puts "ようこそ！"
+    puts "続行->s"
+    puts "終了->e"
+    print "-> "
+    x=STDIN.gets.chomp!
+    if x=="s" then
+      f_login
+    else
+      @@function_cnf="-1"
+      @scnf="-1"
+    end
+  end
+    
+  
+  def f_login #ログイン機能 Loginクラスにアクセス
     loop do
-      @scnf=Rogin.new.to_s
+      @scnf=Login.new.to_s
       if @scnf=="-1" then
         break
       elsif @scnf=="1" then
@@ -40,7 +40,7 @@ class Func
     end
   end
 
-  def f_mode
+  def f_mode #モード機能
     @m_cnf=0
     loop do
       puts "モード選択"
@@ -57,20 +57,30 @@ class Func
         @m_cnf=f_account
       end
       
-      break if @m_cnf==-1
+      if @m_cnf==-1 then
+        @@function_cnf=1
+        break
+      end
     end
   end
       
-  def timeline
+  def timeline #タイムライン機能 Userクラスのtimelineにアクセス
     User.timeline
   end
 
-  def f_account
-    puts "作成中"
-    return -1
+  def f_account #アカウント機能 ログイン中のユーザーのツイート表示、ログアウトができる。
+    puts "自分のツイート -> 1"
+    puts "ログアウト -> 2"
+    print "-> "
+    a=STDIN.gets.chomp!
+    if a=="1" then
+      User.my_tweet
+    elsif a=="2" then
+      return Sign.logout
+    end
   end
 
-  def f_tweet
+  def f_tweet #ツイート機能 Userクラスのinsertにアクセス
     if @scnf == "1" then
       puts "いまどうしてる？"
       User.insert
@@ -88,27 +98,62 @@ end
 
 
 #---------------------------------
-class User
+class User #ユーザー処理
   @@user = {}
-  @@tweet = Array.new
+  @@time = Array.new
+  @@count = 0
+  @@tweet = {}
 
   def initialize(username)
     @username = Name.new(username)
     @cnf =  Sign.new(username)
   end
 
-  def self.insert
-    @@tweet << Tweet.new
+  def self.insert #ツイート挿入
     name=Sign.find.to_s
-    @@user[name]=@@tweet
+    if @@tweet[name].nil? then
+      @@tweet[name]=Array.new
+    end
+    @@tweet[name] << Tweet.new
+    @@time.unshift(Time.new)
+    @@user[name]=@@tweet[name]
     return @@user[name]
   end
 
-  def self.timeline
-    @@user.each do |name,tw|
-      tw.each do |a|
+  def self.my_tweet #ログイン中のユーザーのツイート表示
+    my_name=Sign.find.to_s
+    i=0
+    @@user[my_name].reverse_each do |a|
+      print "@",my_name,"  "
+      print a
+      puts @x[i]," "
+      i+=1
+    end
+  end
+
+  def self.timeline #タイムライン機能 時間も一緒に表示
+    i=0
+    @x=Array.new
+    tnow=Time.now
+    @@user.reverse_each do |name,tw|
+      tw.reverse_each do |a|
         print "@",name,"  "
-        puts a
+        print a
+        tb=tnow-@@time[i]
+        th=(tb/3600).to_i
+        tm=(tb/60).to_i
+        ts=tb.to_i
+        @x[i] = if th>=1 then
+          "\t\t#{th}時間前\n"
+        elsif 0 < tm && tm <=59 then
+          "\t\t#{tm}分前\n"
+        elsif 0 < ts && ts <=59 then
+          "\t\t#{ts}秒前\n"
+        elsif ts==0 then
+          "\t\tちょっと前\n"
+            end
+        puts @x[i]," "
+        i+=1
       end
     end
   end
@@ -129,8 +174,8 @@ class Name #ユーザー名を表示クラス
   end
 end
 #--------------------------
-class Sign #サインインクラス
-  @@exist = {}
+class Sign #ユーザー存在確認クラス
+  @@exist = {}　#ユーザー名が存在すれば1 ログインすると2になる。
   def initialize(username)
     @username = username
     
@@ -143,8 +188,21 @@ class Sign #サインインクラス
     end
     
   end
+
+  def self.logout #ログアウト ログイン中のユーザーの存在を1にする。
+    puts "ログアウトしますか?(y/n)"
+    print "-> "
+    x=STDIN.gets.chomp!
+    if x=="y" then
+      name=Sign.find
+      @@exist[name]=1
+      return -1
+    else
+      return 1
+    end
+  end
   
-  def sign
+  def sign #サインアップする
     puts "ユーザーがいません。"
     puts "ユーザー登録しますか？(y/n)"
     print "->"
@@ -156,7 +214,7 @@ class Sign #サインインクラス
     end
   end
 
-  def self.find
+  def self.find #ログイン中のユーザーを探す、ユーザー名を返す。
     @@exist.each do |name,exi|
       if exi==2 then
         return name
@@ -176,7 +234,7 @@ class Tweet
     tweet_do
   end
 
-  def tweet_do
+  def tweet_do #実際にツイートを入力
     @tweet = STDIN.gets
   end
 
@@ -185,13 +243,13 @@ class Tweet
   end
 end
 #--------------------------
-class Rogin #ログイン
+class Login #ログイン
   def initialize
     @cnf=0
-    r_rogin
+    l_login
   end
 
-  def r_rogin
+  def l_login #ログイン機能
     loop do 
       print "ユーザー名を入力してください->"
       arr = STDIN.gets.chomp!
@@ -207,11 +265,11 @@ class Rogin #ログイン
       
       puts "終了しますか?(y/n)"
       cnf=STDIN.gets.chomp!
-      if cnf=="y" then
-        @cnf=-1
+      if cnf=="n" then
+        @cnf=0
         break
       else
-        @cnf=0
+        @cnf=-1
       end
     end
   end
@@ -222,6 +280,7 @@ class Rogin #ログイン
 end
 
 #--------------------------
-
-function_cnf=Func.new
-puts function_cnf
+loop do
+  function_cnf=Func.new
+  break if function_cnf.to_s=="-1"
+end
